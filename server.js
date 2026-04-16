@@ -1,4 +1,3 @@
-
 const fastify = require('fastify')({ logger: true });
 const path = require('path');
 
@@ -8,10 +7,9 @@ fastify.register(require('@fastify/static'), {
 });
 
 fastify.register(require('@fastify/view'), {
-  engine: {
-    pug: require('pug'),
-  },
+  engine: { pug: require('pug') },
   root: path.join(__dirname, 'views'),
+  includeViewExtension: true,
 });
 
 fastify.register(require('@fastify/formbody'));
@@ -25,19 +23,25 @@ fastify.get('/api', async (request, reply) => {
   return { message: 'Запрос прошел успешно' };
 });
 
-fastify.get('/users', async (request, reply) => {
-  return reply.view('users.pug', { users });
+fastify.get('/', async (request, reply) => {
+  return reply.view('index', { users });
 });
 
-fastify.get('/users/create', async (request, reply) => {
-  return reply.view('create.pug');
-});
+fastify.get('/users', (request, reply) => reply.redirect('/'));
+fastify.get('/users/create', (request, reply) => reply.redirect('/'));
 
 fastify.post('/users', async (request, reply) => {
   const { name, email } = request.body;
   const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
   users.push({ id: newId, name, email });
-  reply.redirect('/users');
+  reply.redirect('/');
+});
+
+fastify.post('/users/delete/:id', async (request, reply) => {
+  const { id } = request.params;
+  const userId = parseInt(id, 10);
+  users = users.filter(user => user.id !== userId);
+  reply.redirect('/');
 });
 
 const start = async () => {
