@@ -1,0 +1,47 @@
+doctype html
+html(lang="ru")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Fastify + Pug
+    link(rel="stylesheet", href="/style.css")
+  body
+    .wrapper
+      .card
+        h1 Fastify приложение
+        button#apiButton Сделать запрос на API
+
+      .card
+        h2 Пользователи
+        if users.length
+          ul.user-list
+            each user in users
+              li.user-item
+                span.user-name #{user.name}
+                span.user-email #{user.email}
+                form(method="POST", action=`/users/delete/${user.id}`)
+                  button.delete-btn(type="submit") Удалить
+        else
+          p Пользователей пока нет.
+
+        details
+          summary Добавить пользователя
+          form(method="POST", action="/users")
+            label(for="name") Имя
+            input#name(type="text", name="name", placeholder="Иван", required)
+            label(for="email") Email
+            input#email(type="email", name="email", placeholder="ivan@example.com", required)
+            button(type="submit") Создать
+
+    script.
+      document.getElementById('apiButton').addEventListener('click', async () => {
+        try {
+          const response = await fetch('/api');
+          const data = await response.json();
+          if (data.message === 'Запрос прошел успешно') {
+            console.log('Запрос прошел успешно');
+          }
+        } catch (error) {
+          console.error('Ошибка при запросе:', error);
+        }
+      });
